@@ -39,8 +39,9 @@ BME280I2C bme;
 int8_t timeZone = 5; //Your timeZone
 bool metric = true; //Set your metric system
 long lastSync = 0;
-long syncInterval = 60 * 1000;
-
+long lastGet = 0;
+long syncInterval = 600 * 1000;
+long getTempInterval = 60 * 1000;
 float collTemp = 0.0;
 float collHum = 0.0;
 float collPres = 0.0;
@@ -153,7 +154,10 @@ void loop() {
   client.loop();
 
   unsigned long currentMillis = millis();
-  getTemp();
+  if (currentMillis - lastGet > getTempInterval) {
+    lastGet = currentMillis;
+    getTemp();
+  }
   if (currentMillis - lastSync > syncInterval) {
     lastSync = currentMillis;
     StaticJsonBuffer<200> jsonBuffer;
@@ -163,6 +167,4 @@ void loop() {
     publish(root);
     resetValues();
   }
-
-  delay(500);
 }
